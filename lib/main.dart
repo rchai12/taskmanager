@@ -128,35 +128,37 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
   }
 
   void _showAddTaskMenu() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Container(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Task Title'),
-                ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Task Description'),
-                ),
-                ElevatedButton(onPressed: _addTask, child: Text('Add Task')),
-              ],
-            ),
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 50, // Add extra space to push up
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(labelText: 'Task Title'),
+              ),
+              TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: 'Task Description'),
+              ),
+              ElevatedButton(onPressed: _addTask, child: Text('Add Task')),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
-  @override
+@override
   Widget build(BuildContext context) {
     final ongoingTasks = _tasks.where((task) => !task.status).toList();
     final completedTasks = _tasks.where((task) => task.status).toList();
@@ -195,7 +197,10 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
               final task = completedTasks[index];
               return ListTile(
                 onTap: () => _editTask(_tasks.indexOf(task)),
-                leading: Icon(Icons.radio_button_checked),
+                leading: IconButton(
+                  icon: Icon(Icons.check_circle),
+                  onPressed: () => _toggleTaskStatus(_tasks.indexOf(task)),
+                ),
                 title: Text(task.title, style: TextStyle(decoration: TextDecoration.lineThrough)),
               );
             },
