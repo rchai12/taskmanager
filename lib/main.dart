@@ -52,6 +52,48 @@ class _TaskScreenState extends State<TaskScreen> {
     }
   }
 
+  void _editTask(int index) {
+    _titleController.text = _tasks[index].title;
+    _descriptionController.text = _tasks[index].description;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: 'Task Title'),
+                ),
+                TextField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: 'Task Description'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _tasks[index].setTitle(_titleController.text);
+                      _tasks[index].setDescription(_descriptionController.text);
+                    });
+                    _titleController.clear();
+                    _descriptionController.clear();
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Save Changes'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _toggleTaskStatus(int index) {
     setState(() {
       _tasks[index].toggleStatus();
@@ -102,15 +144,12 @@ class _TaskScreenState extends State<TaskScreen> {
         itemBuilder: (context, index) {
           final task = _tasks[index];
           return ListTile(
-            title: Text(task.title, style: TextStyle(decoration: task.status ? TextDecoration.lineThrough : null)),
-            subtitle: Text(task.description),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(icon: Icon(Icons.check), onPressed: () => _toggleTaskStatus(index)),
-                IconButton(icon: Icon(Icons.delete), onPressed: () => _deleteTask(index)),
-              ],
+            onTap: () => _editTask(index),
+            leading: IconButton(
+              icon: Icon(task.status ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+              onPressed: () => _toggleTaskStatus(index),
             ),
+            title: Text(task.title, style: TextStyle(decoration: task.status ? TextDecoration.lineThrough : null)),
           );
         },
       ),
