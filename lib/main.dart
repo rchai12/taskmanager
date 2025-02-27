@@ -81,7 +81,9 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
       isScrollControlled: true,
       builder: (BuildContext context) {
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 50, // Add extra space to push up
+        ),
           child: Container(
             padding: const EdgeInsets.all(8.0),
             child: Column(
