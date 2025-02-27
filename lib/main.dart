@@ -36,10 +36,31 @@ class TaskScreen extends StatefulWidget {
   _TaskScreenState createState() => _TaskScreenState();
 }
 
-class _TaskScreenState extends State<TaskScreen> {
+class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateMixin {
   final List<Task> _tasks = [];
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   void _addTask() {
     if (_titleController.text.isNotEmpty && _descriptionController.text.isNotEmpty) {
@@ -137,26 +158,56 @@ class _TaskScreenState extends State<TaskScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ongoingTasks = _tasks.where((task) => !task.status).toList();
+    final completedTasks = _tasks.where((task) => task.status).toList();
+
     return Scaffold(
-      appBar: AppBar(title: Text('Task Manager')),
-      body: ListView.builder(
-        itemCount: _tasks.length,
-        itemBuilder: (context, index) {
-          final task = _tasks[index];
-          return ListTile(
-            onTap: () => _editTask(index),
-            leading: IconButton(
-              icon: Icon(task.status ? Icons.radio_button_checked : Icons.radio_button_unchecked),
-              onPressed: () => _toggleTaskStatus(index),
-            ),
-            title: Text(task.title, style: TextStyle(decoration: task.status ? TextDecoration.lineThrough : null)),
-          );
-        },
+      appBar: AppBar(
+        title: Text('Task Manager'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'Ongoing'),
+            Tab(text: 'Completed'),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTaskMenu,
-        child: Icon(Icons.add),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          ListView.builder(
+            itemCount: ongoingTasks.length,
+            itemBuilder: (context, index) {
+              final task = ongoingTasks[index];
+              return ListTile(
+                onTap: () => _editTask(_tasks.indexOf(task)),
+                leading: IconButton(
+                  icon: Icon(task.status ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                  onPressed: () => _toggleTaskStatus(_tasks.indexOf(task)),
+                ),
+                title: Text(task.title),
+              );
+            },
+          ),
+          ListView.builder(
+            itemCount: completedTasks.length,
+            itemBuilder: (context, index) {
+              final task = completedTasks[index];
+              return ListTile(
+                onTap: () => _editTask(_tasks.indexOf(task)),
+                leading: Icon(Icons.radio_button_checked),
+                title: Text(task.title, style: TextStyle(decoration: TextDecoration.lineThrough)),
+              );
+            },
+          ),
+        ],
       ),
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton(
+              onPressed: _showAddTaskMenu,
+              child: Icon(Icons.add),
+            )
+          : null,
     );
   }
 }
